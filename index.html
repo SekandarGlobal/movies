@@ -559,6 +559,8 @@
         fetchMovies(1);
         // Auto hide header after search
         setTimeout(hideHeader, 500);
+        // Hide mobile keyboard by blurring the input
+        searchInput.blur();
       }, 400);
     });
 
