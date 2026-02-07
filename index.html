@@ -24,10 +24,9 @@
       background: radial-gradient(circle at center, #1a1a1a, #000000);
       color: var(--text-primary);
       line-height: 1.6;
-      padding: 2.5rem 1rem 1rem;
+      padding-top: 6rem; /* more space for taller mobile header */
       min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
     }
 
     header {
@@ -35,14 +34,15 @@
       top: 0;
       left: 0;
       right: 0;
-      padding: 1rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0,0,0,0.7);
+      padding: 1.2rem 1.5rem;
+      background: rgba(0,0,0,0.75);
       backdrop-filter: blur(12px);
       z-index: 1000;
       border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
     }
 
     h1 {
@@ -50,84 +50,22 @@
       font-weight: 900;
       margin: 0;
       text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      text-align: center;
     }
 
-    #adult-btn {
-      outline: none;
-      cursor: pointer;
-      border: none;
-      padding: 0.9rem 2rem;
-      margin: 0;
-      font-family: inherit;
-      position: relative;
-      display: inline-block;
-      letter-spacing: 0.05rem;
-      font-weight: 700;
-      font-size: 17px;
-      border-radius: 500px;
-      overflow: hidden;
-      background: #66ff66;
-      color: ghostwhite;
-      animation: subtlePulse 3s infinite alternate;
-    }
-
-    #adult-btn span {
-      position: relative;
-      z-index: 10;
-      color: black;
-    }
-
-    #adult-btn::before,
-    #adult-btn::after {
-      position: absolute;
-      top: 0;
-      left: 0;
+    .header-controls {
       width: 100%;
-      height: 100%;
-      z-index: 0;
-    }
-
-    #adult-btn::before {
-      content: "";
-      background: #000;
-      width: 120%;
-      left: -10%;
-      transform: skew(30deg);
-      transform: translate3d(100%, 0, 0);
-    }
-
-    @keyframes subtlePulse {
-      0%   { box-shadow: 0 0 15px rgba(102,255,102,0.4); }
-      100% { box-shadow: 0 0 25px rgba(102,255,102,0.7); }
-    }
-
-    #controls {
-      margin-top: 5.5rem;
-      margin-bottom: 5rem;          /* ← increased vertical space below controls/dropdown */
-      max-width: 1400px;
-      margin-left: auto;
-      margin-right: auto;
       display: flex;
       flex-direction: column;
-      gap: 2.5rem;                  /* slightly more internal spacing */
       align-items: center;
-      position: relative;
-      z-index: 10;
-    }
-
-    #genre-dropdown-container {
-      max-width: 500px;
-      width: 100%;
-      position: relative;
-      z-index: 9999 !important;
-      margin-bottom: 2rem;          /* ← extra space specifically below dropdown */
+      gap: 1rem;
     }
 
     #search {
       width: 100%;
-      max-width: 760px;
-      padding: 1.1rem 1.8rem;
-      font-size: 1.15rem;
+      max-width: 100%;
+      padding: 0.9rem 1.5rem;
+      font-size: 1.05rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 9999px;
@@ -143,10 +81,17 @@
       border-color: rgba(255,255,255,0.28);
     }
 
+    #genre-dropdown-container {
+      width: 100%;
+      max-width: 100%;
+      position: relative;
+      z-index: 9999;
+    }
+
     #genre-toggle {
       width: 100%;
-      padding: 1.1rem 1.8rem;
-      font-size: 1.08rem;
+      padding: 0.9rem 1.5rem;
+      font-size: 1.05rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 9999px;
@@ -166,17 +111,16 @@
 
     #genre-toggle::after {
       content: '▼';
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
-      transition: transform 0.3s ease;
     }
 
     #genre-list {
       position: absolute;
-      top: calc(100% + 0.6rem);
+      top: calc(100% + 0.5rem);
       left: 0;
       width: 100%;
-      max-height: 300px;
+      max-height: 280px;
       overflow-y: auto;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -190,7 +134,7 @@
     #genre-list.open { display: block; }
 
     .genre-option {
-      padding: 0.95rem 1.5rem;
+      padding: 0.9rem 1.4rem;
       color: var(--text-secondary);
       cursor: pointer;
       transition: background 0.25s ease;
@@ -201,14 +145,55 @@
       color: var(--text-primary);
     }
 
+    .adult-wrapper {
+      width: 100%;
+      text-align: center;
+    }
+
+    #adult-btn {
+      outline: none;
+      cursor: pointer;
+      border: none;
+      padding: 0.9rem 2rem;
+      font-family: inherit;
+      position: relative;
+      display: inline-block;
+      letter-spacing: 0.05rem;
+      font-weight: 700;
+      font-size: 17px;
+      border-radius: 500px;
+      overflow: hidden;
+      background: #66ff66;
+      color: ghostwhite;
+      animation: subtlePulse 3s infinite alternate;
+    }
+
+    #adult-btn span {
+      position: relative;
+      z-index: 10;
+      color: black;
+    }
+
+    #adult-btn::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #000;
+      transform: translate3d(100%, 0, 0);
+    }
+
+    @keyframes subtlePulse {
+      0%   { box-shadow: 0 0 12px rgba(102,255,102,0.4); }
+      100% { box-shadow: 0 0 20px rgba(102,255,102,0.7); }
+    }
+
     .movies-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 2rem;
       max-width: 1600px;
       margin: 0 auto;
-      position: relative;
-      z-index: 1;
     }
 
     .movie-card {
@@ -220,8 +205,6 @@
       border: 1px solid var(--border);
       backdrop-filter: blur(var(--blur-amount));
       box-shadow: var(--shadow);
-      position: relative;
-      z-index: 2;
     }
 
     .movie-card:hover {
@@ -256,8 +239,6 @@
       font-size: 1.5rem;
       margin: 4rem 0;
       color: var(--text-muted);
-      position: relative;
-      z-index: 5;
     }
 
     footer {
@@ -265,22 +246,47 @@
       margin-top: 5rem;
       color: var(--text-muted);
       font-size: 0.95rem;
-      position: relative;
-      z-index: 5;
     }
 
+    /* Desktop adjustments (header side-by-side) */
+    @media (min-width: 769px) {
+      header {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+      }
+      h1 { font-size: 2.4rem; }
+      .header-controls {
+        flex-direction: row;
+        align-items: center;
+        gap: 1.5rem;
+      }
+      #search {
+        width: 260px;
+        flex: none;
+      }
+      #genre-dropdown-container {
+        width: 220px;
+        flex: none;
+      }
+      .adult-wrapper { flex: none; }
+    }
+
+    /* Mobile stacking */
     @media (max-width: 768px) {
       .movies-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 1.4rem;
       }
-      header { padding: 0.9rem 1rem; }
-      h1 { font-size: 2rem; }
-      #controls { margin-bottom: 4rem; } /* slightly less on mobile if needed */
+      header { padding: 1rem; }
+      h1 { font-size: 1.9rem; }
     }
 
     @media (max-width: 480px) {
       .movies-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.2rem; }
+      h1 { font-size: 1.7rem; }
     }
   </style>
 </head>
@@ -288,38 +294,38 @@
 
   <header>
     <h1>Movie Browser</h1>
-    <button id="adult-btn"><span>Adult</span></button>
-  </header>
-
-  <div id="controls">
-    <input type="text" id="search" placeholder="Search movies..." autocomplete="off"/>
-
-    <div id="genre-dropdown-container">
-      <div id="genre-toggle">All / Popular <span></span></div>
-      <div id="genre-list">
-        <div class="genre-option selected" data-value="">All / Popular</div>
-        <div class="genre-option" data-value="28">Action</div>
-        <div class="genre-option" data-value="12">Adventure</div>
-        <div class="genre-option" data-value="16">Animation</div>
-        <div class="genre-option" data-value="35">Comedy</div>
-        <div class="genre-option" data-value="80">Crime</div>
-        <div class="genre-option" data-value="99">Documentary</div>
-        <div class="genre-option" data-value="18">Drama</div>
-        <div class="genre-option" data-value="10751">Family</div>
-        <div class="genre-option" data-value="14">Fantasy</div>
-        <div class="genre-option" data-value="36">History</div>
-        <div class="genre-option" data-value="27">Horror</div>
-        <div class="genre-option" data-value="10402">Music</div>
-        <div class="genre-option" data-value="9648">Mystery</div>
-        <div class="genre-option" data-value="10749">Romance</div>
-        <div class="genre-option" data-value="878">Science Fiction</div>
-        <div class="genre-option" data-value="10770">TV Movie</div>
-        <div class="genre-option" data-value="53">Thriller</div>
-        <div class="genre-option" data-value="10752">War</div>
-        <div class="genre-option" data-value="37">Western</div>
+    <div class="header-controls">
+      <input type="text" id="search" placeholder="Search movies..." autocomplete="off"/>
+      <div id="genre-dropdown-container">
+        <div id="genre-toggle">All / Popular <span></span></div>
+        <div id="genre-list">
+          <div class="genre-option selected" data-value="">All / Popular</div>
+          <div class="genre-option" data-value="28">Action</div>
+          <div class="genre-option" data-value="12">Adventure</div>
+          <div class="genre-option" data-value="16">Animation</div>
+          <div class="genre-option" data-value="35">Comedy</div>
+          <div class="genre-option" data-value="80">Crime</div>
+          <div class="genre-option" data-value="99">Documentary</div>
+          <div class="genre-option" data-value="18">Drama</div>
+          <div class="genre-option" data-value="10751">Family</div>
+          <div class="genre-option" data-value="14">Fantasy</div>
+          <div class="genre-option" data-value="36">History</div>
+          <div class="genre-option" data-value="27">Horror</div>
+          <div class="genre-option" data-value="10402">Music</div>
+          <div class="genre-option" data-value="9648">Mystery</div>
+          <div class="genre-option" data-value="10749">Romance</div>
+          <div class="genre-option" data-value="878">Science Fiction</div>
+          <div class="genre-option" data-value="10770">TV Movie</div>
+          <div class="genre-option" data-value="53">Thriller</div>
+          <div class="genre-option" data-value="10752">War</div>
+          <div class="genre-option" data-value="37">Western</div>
+        </div>
+      </div>
+      <div class="adult-wrapper">
+        <button id="adult-btn"><span>Adult</span></button>
       </div>
     </div>
-  </div>
+  </header>
 
   <div id="movies" class="movies-grid"></div>
   <div id="loading" class="loading">Loading more...</div>
