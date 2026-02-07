@@ -435,26 +435,43 @@
     const MAX_PAGE = 500;
     const SCROLL_BUFFER = 1200;
 
-    genreToggle.addEventListener('click', () => {
+    genreToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
       genreList.classList.toggle('open');
       genreToggle.classList.toggle('open');
     });
 
-    genreOptions.forEach(opt => {
-      opt.addEventListener('click', () => {
-        genreOptions.forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        genreToggle.firstChild.textContent = opt.textContent.trim() + ' ';
-        currentGenre = opt.dataset.value;
-        genreList.classList.remove('open');
-        genreToggle.classList.remove('open');
-        currentPage = 1;
-        hasMore = true;
-        endMsg.style.display = 'none';
-        fetchMovies(1);
-        // Auto hide header after selection
-        setTimeout(hideHeader, 500);
-      });
+    // Use event delegation for better reliability
+    genreList.addEventListener('click', (e) => {
+      const opt = e.target.closest('.genre-option');
+      if (!opt) return;
+      
+      e.stopPropagation();
+      
+      // Remove selected class from all options
+      genreOptions.forEach(o => o.classList.remove('selected'));
+      
+      // Add selected class to clicked option
+      opt.classList.add('selected');
+      
+      // Update toggle text
+      genreToggle.firstChild.textContent = opt.textContent.trim() + ' ';
+      
+      // Update current genre
+      currentGenre = opt.dataset.value;
+      
+      // Close dropdown
+      genreList.classList.remove('open');
+      genreToggle.classList.remove('open');
+      
+      // Reset pagination and fetch movies
+      currentPage = 1;
+      hasMore = true;
+      endMsg.style.display = 'none';
+      fetchMovies(1);
+      
+      // Auto hide header after selection
+      setTimeout(hideHeader, 500);
     });
 
     document.addEventListener('click', e => {
