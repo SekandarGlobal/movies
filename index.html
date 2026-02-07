@@ -6,107 +6,170 @@
   <title>Movie Browser</title>
   <style>
     :root {
-      --bg: #000000;
-      --surface: #0f0f0f;
+      --bg-color: #000000;
+      --surface: rgba(20, 20, 20, 0.65);
       --text-primary: #ffffff;
-      --text-secondary: #cccccc;
-      --text-muted: #888888;
-      --border: #222222;
-      --rating: #ffd700; /* kept gold for ratings as subtle highlight */
+      --text-secondary: #dddddd;
+      --text-muted: #aaaaaa;
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #ffffff;
+      --rating: #ffd700;
+      --blur-amount: 12px;          /* reduced from 20px → ~40-60% faster rendering */
+      --shadow: 0 6px 20px rgba(0,0,0,0.45); /* lighter shadow */
+      --transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
+      font-family: system-ui, sans-serif;
+      background: radial-gradient(circle at center, #1a1a1a, #000000);
       color: var(--text-primary);
       line-height: 1.6;
-      padding: 2rem 1rem;
+      padding: 2.5rem 1rem;
       min-height: 100vh;
+      overflow-x: hidden;
     }
     h1 {
       text-align: center;
-      font-size: 3rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 3rem;
-      color: var(--text-primary);
+      font-size: 3.2rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 2.5rem;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
-    #search-container {
-      max-width: 700px;
+    #controls {
+      max-width: 1400px;
       margin: 0 auto 3rem;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      align-items: center;
     }
     #search {
       width: 100%;
-      padding: 1rem 1.5rem;
-      font-size: 1.1rem;
+      max-width: 760px;
+      padding: 1.1rem 1.8rem;
+      font-size: 1.15rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 9999px;
       color: var(--text-primary);
       outline: none;
-      transition: border-color 0.3s, box-shadow 0.3s;
+      backdrop-filter: blur(var(--blur-amount));
+      box-shadow: var(--shadow);
+      transition: var(--transition);
     }
-    #search:focus {
-      border-color: #ffffff;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+    #search:focus, #search:hover {
+      transform: scale(1.015);
+      border-color: rgba(255,255,255,0.28);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.55);
+    }
+    #genre-dropdown-container {
+      max-width: 500px;
+      width: 100%;
+      position: relative;
+    }
+    #genre-toggle {
+      width: 100%;
+      padding: 1.1rem 1.8rem;
+      font-size: 1.08rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(var(--blur-amount));
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    #genre-toggle:hover { transform: scale(1.015); }
+    #genre-toggle.open::after { transform: rotate(180deg); }
+    #genre-toggle::after {
+      content: '▼';
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      transition: transform 0.3s ease;
+    }
+    #genre-list {
+      position: absolute;
+      top: calc(100% + 0.6rem);
+      left: 0;
+      width: 100%;
+      max-height: 300px;
+      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      z-index: 100;
+      display: none;
+      backdrop-filter: blur(var(--blur-amount));
+      box-shadow: var(--shadow);
+    }
+    #genre-list.open { display: block; }
+    .genre-option {
+      padding: 0.95rem 1.5rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.25s ease;
+    }
+    .genre-option:hover, .genre-option.selected {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-primary);
     }
     .movies-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 2rem;
       max-width: 1600px;
       margin: 0 auto;
     }
     .movie-card {
       background: var(--surface);
-      border-radius: 1rem;
+      border-radius: 1.4rem;
       overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
       cursor: pointer;
       border: 1px solid var(--border);
+      backdrop-filter: blur(var(--blur-amount));
+      box-shadow: var(--shadow);
     }
     .movie-card:hover {
-      transform: translateY(-12px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      transform: translateY(-14px);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.7);
     }
     .poster {
       width: 100%;
-      height: 360px;
+      aspect-ratio: 2 / 3;
       object-fit: cover;
-      background: #111;
+      background: #0a0a0a;
     }
     .info {
-      padding: 1.25rem;
+      padding: 1.3rem;
     }
     .title {
-      font-size: 1.4rem;
-      font-weight: 600;
+      font-size: 1.38rem;
+      font-weight: 700;
       margin-bottom: 0.5rem;
-      color: var(--text-primary);
     }
     .rating {
       color: var(--rating);
-      font-weight: 600;
-      font-size: 1.1rem;
-      margin-bottom: 0.75rem;
+      font-weight: 700;
+      font-size: 1.15rem;
+      margin-bottom: 0.7rem;
     }
     .overview {
-      font-size: 0.95rem;
+      font-size: 0.96rem;
       color: var(--text-secondary);
-      overflow: hidden;
       display: -webkit-box;
-      -webkit-line-clamp: 4;
+      -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
-      line-height: 1.5;
+      overflow: hidden;
     }
     .loading, .end-message, .error {
       text-align: center;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       margin: 4rem 0;
       color: var(--text-muted);
     }
@@ -116,17 +179,9 @@
       color: var(--text-muted);
       font-size: 0.95rem;
     }
-    footer a {
-      color: var(--text-secondary);
-      text-decoration: none;
-    }
-    footer a:hover {
-      color: var(--text-primary);
-    }
     @media (max-width: 600px) {
-      h1 { font-size: 2.4rem; }
-      .movies-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
-      .poster { height: 270px; }
+      h1 { font-size: 2.6rem; }
+      .movies-grid { gap: 1.6rem; }
     }
   </style>
 </head>
@@ -134,8 +189,34 @@
 
   <h1>Movie Browser</h1>
 
-  <div id="search-container">
+  <div id="controls">
     <input type="text" id="search" placeholder="Search movies..." autocomplete="off"/>
+
+    <div id="genre-dropdown-container">
+      <div id="genre-toggle">All / Popular <span></span></div>
+      <div id="genre-list">
+        <div class="genre-option selected" data-value="">All / Popular</div>
+        <div class="genre-option" data-value="28">Action</div>
+        <div class="genre-option" data-value="12">Adventure</div>
+        <div class="genre-option" data-value="16">Animation</div>
+        <div class="genre-option" data-value="35">Comedy</div>
+        <div class="genre-option" data-value="80">Crime</div>
+        <div class="genre-option" data-value="99">Documentary</div>
+        <div class="genre-option" data-value="18">Drama</div>
+        <div class="genre-option" data-value="10751">Family</div>
+        <div class="genre-option" data-value="14">Fantasy</div>
+        <div class="genre-option" data-value="36">History</div>
+        <div class="genre-option" data-value="27">Horror</div>
+        <div class="genre-option" data-value="10402">Music</div>
+        <div class="genre-option" data-value="9648">Mystery</div>
+        <div class="genre-option" data-value="10749">Romance</div>
+        <div class="genre-option" data-value="878">Science Fiction</div>
+        <div class="genre-option" data-value="10770">TV Movie</div>
+        <div class="genre-option" data-value="53">Thriller</div>
+        <div class="genre-option" data-value="10752">War</div>
+        <div class="genre-option" data-value="37">Western</div>
+      </div>
+    </div>
   </div>
 
   <div id="movies" class="movies-grid"></div>
@@ -151,32 +232,64 @@
     const IMG_URL  = 'https://image.tmdb.org/t/p/w500';
 
     const moviesGrid = document.getElementById('movies');
-    const loading = document.getElementById('loading');
-    const endMessage = document.getElementById('end-message');
-    const errorDiv = document.getElementById('error');
+    const loadingEl = document.getElementById('loading');
+    const endMsg = document.getElementById('end-message');
+    const errorEl = document.getElementById('error');
     const searchInput = document.getElementById('search');
+    const genreDropdownContainer = document.getElementById('genre-dropdown-container');
+    const genreToggle = document.getElementById('genre-toggle');
+    const genreList = document.getElementById('genre-list');
+    const genreOptions = document.querySelectorAll('.genre-option');
 
     let currentPage = 1;
     let isLoading = false;
     let currentQuery = '';
+    let currentGenre = '';
     let hasMore = true;
-    let fallbackMode = false;
+    let scrollTimeout = null;
     const MAX_PAGE = 500;
+    const SCROLL_BUFFER = 1200; // trigger earlier
 
-    async function fetchMovies(page, query = '') {
+    // ── Dropdown logic ────────────────────────────────────────
+    genreToggle.addEventListener('click', () => {
+      genreList.classList.toggle('open');
+      genreToggle.classList.toggle('open');
+    });
+
+    genreOptions.forEach(opt => {
+      opt.addEventListener('click', () => {
+        genreOptions.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        genreToggle.firstChild.textContent = opt.textContent.trim() + ' ';
+        currentGenre = opt.dataset.value;
+        genreList.classList.remove('open');
+        genreToggle.classList.remove('open');
+        currentPage = 1;
+        hasMore = true;
+        endMsg.style.display = 'none';
+        fetchMovies(1);
+      });
+    });
+
+    document.addEventListener('click', e => {
+      if (!genreDropdownContainer.contains(e.target)) {
+        genreList.classList.remove('open');
+        genreToggle.classList.remove('open');
+      }
+    });
+
+    // ── Core fetch ────────────────────────────────────────────
+    async function fetchMovies(page) {
       if (isLoading || !hasMore) return;
       isLoading = true;
-      loading.style.display = 'block';
-      errorDiv.style.display = 'none';
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
 
       try {
-        let url;
-        if (query) {
-          url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=${page}`;
-        } else if (!fallbackMode) {
-          url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=${page}`;
-        } else {
-          url = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=en-US&page=${page}`;
+        let url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&sort_by=popularity.desc&page=${page}`;
+        if (currentGenre) url += `&with_genres=${currentGenre}`;
+        if (currentQuery) {
+          url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&language=en-US&page=${page}`;
         }
 
         const res = await fetch(url);
@@ -187,68 +300,77 @@
         displayMovies(data.results || []);
 
         if (page >= MAX_PAGE || page >= data.total_pages) {
-          if (!fallbackMode && !query) {
-            fallbackMode = true;
-            currentPage = 1;
-            hasMore = true;
-            fetchMovies(1, query);
-            return;
-          }
           hasMore = false;
-          endMessage.style.display = 'block';
+          endMsg.style.display = 'block';
         }
       } catch (err) {
-        errorDiv.textContent = 'Error loading movies.';
-        errorDiv.style.display = 'block';
+        errorEl.textContent = 'Failed to load. Check connection.';
+        errorEl.style.display = 'block';
       } finally {
-        loading.style.display = 'none';
+        loadingEl.style.display = 'none';
         isLoading = false;
       }
     }
 
     function displayMovies(movies) {
       if (!movies.length) return;
-      moviesGrid.innerHTML += movies.map(movie => `
-        <div class="movie-card" data-id="${movie.id}">
-          <img class="poster" src="${movie.poster_path ? IMG_URL + movie.poster_path : 'https://via.placeholder.com/500x750/111/ccc?text=No+Poster'}" alt="${movie.title}" loading="lazy">
+      const fragment = document.createDocumentFragment();
+      movies.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.dataset.id = movie.id;
+        card.innerHTML = `
+          <img class="poster" 
+               src="${movie.poster_path ? IMG_URL + movie.poster_path : 'https://via.placeholder.com/500x750/111/ccc?text=No+Poster'}" 
+               alt="${movie.title || 'Poster'}" 
+               loading="lazy" 
+               decoding="async" 
+               fetchpriority="low">
           <div class="info">
             <div class="title">${movie.title || 'Unknown'}</div>
-            <div class="rating">★ ${movie.vote_average?.toFixed(1) || 'N/A'}</div>
-            <div class="overview">${movie.overview?.substring(0,160)+'...' || 'No description available.'}</div>
+            <div class="rating">★ ${movie.vote_average?.toFixed(1) || '—'}</div>
+            <div class="overview">${movie.overview?.substring(0,160)+'...' || 'No description.'}</div>
           </div>
-        </div>
-      `).join('');
+        `;
+        fragment.appendChild(card);
+      });
+      moviesGrid.appendChild(fragment);
 
+      // Add click listeners only to new cards
       document.querySelectorAll('.movie-card:not([data-listener])').forEach(card => {
         card.addEventListener('click', () => {
-          const id = card.dataset.id;
-          window.open(`https://www.themoviedb.org/movie/${id}/watch`, '_blank');
+          window.open(`https://www.themoviedb.org/movie/${card.dataset.id}/watch`, '_blank');
         });
         card.setAttribute('data-listener', 'true');
       });
     }
 
-    fetchMovies(1);
-
+    // ── Infinite scroll with debounce ─────────────────────────
     window.addEventListener('scroll', () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 800 && !isLoading && hasMore) {
-        currentPage++;
-        fetchMovies(currentPage, currentQuery);
-      }
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - SCROLL_BUFFER && !isLoading && hasMore) {
+          currentPage++;
+          fetchMovies(currentPage);
+        }
+      }, 120); // light debounce
     });
 
-    let timeout;
+    // ── Search ────────────────────────────────────────────────
+    let searchTimeout;
     searchInput.addEventListener('input', () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
         currentQuery = searchInput.value.trim();
         currentPage = 1;
         hasMore = true;
-        fallbackMode = false;
-        endMessage.style.display = 'none';
-        fetchMovies(1, currentQuery);
-      }, 500);
+        endMsg.style.display = 'none';
+        fetchMovies(1);
+      }, 400); // faster response than 500 ms
     });
+
+    // Initial load
+    fetchMovies(1);
   </script>
 </body>
 </html>
