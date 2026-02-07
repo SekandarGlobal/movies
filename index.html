@@ -52,7 +52,6 @@
       text-shadow: 0 2px 8px rgba(0,0,0,0.6);
     }
 
-    /* Adult button - always in "hovered" state */
     #adult-btn {
       outline: none;
       cursor: pointer;
@@ -94,7 +93,7 @@
       width: 120%;
       left: -10%;
       transform: skew(30deg);
-      transform: translate3d(100%, 0, 0); /* permanently slid in */
+      transform: translate3d(100%, 0, 0);
     }
 
     @keyframes subtlePulse {
@@ -104,13 +103,24 @@
 
     #controls {
       margin-top: 5.5rem;
+      margin-bottom: 5rem;          /* ← increased vertical space below controls/dropdown */
       max-width: 1400px;
       margin-left: auto;
       margin-right: auto;
       display: flex;
       flex-direction: column;
-      gap: 2rem;
+      gap: 2.5rem;                  /* slightly more internal spacing */
       align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    #genre-dropdown-container {
+      max-width: 500px;
+      width: 100%;
+      position: relative;
+      z-index: 9999 !important;
+      margin-bottom: 2rem;          /* ← extra space specifically below dropdown */
     }
 
     #search {
@@ -131,12 +141,6 @@
     #search:focus, #search:hover {
       transform: scale(1.015);
       border-color: rgba(255,255,255,0.28);
-    }
-
-    #genre-dropdown-container {
-      max-width: 500px;
-      width: 100%;
-      position: relative;
     }
 
     #genre-toggle {
@@ -177,10 +181,10 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px;
-      z-index: 100;
+      z-index: 9999 !important;
       display: none;
       backdrop-filter: blur(var(--blur-amount));
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
 
     #genre-list.open { display: block; }
@@ -203,6 +207,8 @@
       gap: 2rem;
       max-width: 1600px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
 
     .movie-card {
@@ -214,6 +220,8 @@
       border: 1px solid var(--border);
       backdrop-filter: blur(var(--blur-amount));
       box-shadow: var(--shadow);
+      position: relative;
+      z-index: 2;
     }
 
     .movie-card:hover {
@@ -248,6 +256,8 @@
       font-size: 1.5rem;
       margin: 4rem 0;
       color: var(--text-muted);
+      position: relative;
+      z-index: 5;
     }
 
     footer {
@@ -255,9 +265,10 @@
       margin-top: 5rem;
       color: var(--text-muted);
       font-size: 0.95rem;
+      position: relative;
+      z-index: 5;
     }
 
-    /* Mobile: 2–3 columns */
     @media (max-width: 768px) {
       .movies-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -265,6 +276,7 @@
       }
       header { padding: 0.9rem 1rem; }
       h1 { font-size: 2rem; }
+      #controls { margin-bottom: 4rem; } /* slightly less on mobile if needed */
     }
 
     @media (max-width: 480px) {
@@ -340,12 +352,10 @@
     const MAX_PAGE = 500;
     const SCROLL_BUFFER = 1200;
 
-    // Adult button (opens in new tab)
     document.getElementById('adult-btn').addEventListener('click', () => {
       window.open('https://shameer.sekandar.store', '_blank', 'noopener,noreferrer');
     });
 
-    // Dropdown logic
     genreToggle.addEventListener('click', () => {
       genreList.classList.toggle('open');
       genreToggle.classList.toggle('open');
@@ -469,7 +479,6 @@
       }, 400);
     });
 
-    // Start loading
     fetchMovies(1);
   </script>
 </body>
