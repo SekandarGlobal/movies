@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movie Browser</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #0f0f0f;
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+      --text-muted: #888888;
+      --border: #222222;
+      --rating: #ffd700; /* kept gold for ratings as subtle highlight */
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 3rem;
+      color: var(--text-primary);
+    }
+    #search-container {
+      max-width: 700px;
+      margin: 0 auto 3rem;
+      text-align: center;
+    }
+    #search {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    #search:focus {
+      border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+    }
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 2rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .movie-card {
+      background: var(--surface);
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+    .movie-card:hover {
+      transform: translateY(-12px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+    .poster {
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+      background: #111;
+    }
+    .info {
+      padding: 1.25rem;
+    }
+    .title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+    .rating {
+      color: var(--rating);
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+    .overview {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      line-height: 1.5;
+    }
+    .loading, .end-message, .error {
+      text-align: center;
+      font-size: 1.4rem;
+      margin: 4rem 0;
+      color: var(--text-muted);
+    }
+    footer {
+      text-align: center;
+      margin-top: 5rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    footer a:hover {
+      color: var(--text-primary);
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 2.4rem; }
+      .movies-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+      .poster { height: 270px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Movie Browser</h1>
+
+  <div id="search-container">
+    <input type="text" id="search" placeholder="Search movies..." autocomplete="off"/>
+  </div>
+
+  <div id="movies" class="movies-grid"></div>
+  <div id="loading" class="loading">Loading more...</div>
+  <div id="end-message" class="end-message" style="display:none;">No more results</div>
+  <div id="error" class="error" style="display:none;"></div>
+
+  <footer>Powered by <a href="https://www.themoviedb.org/" target="_blank">TMDb</a></footer>
+
+  <script>
+    const API_KEY = '7d1b426e90ccc5b343348a5739b4fd3e';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMG_URL  = 'https://image.tmdb.org/t/p/w500';
+
+    const moviesGrid = document.getElementById('movies');
+    const loading = document.getElementById('loading');
+    const endMessage = document.getElementById('end-message');
+    const errorDiv = document.getElementById('error');
+    const searchInput = document.getElementById('search');
+
+    let currentPage = 1;
+    let isLoading = false;
+    let currentQuery = '';
+    let hasMore = true;
+    let fallbackMode = false;
+    const MAX_PAGE = 500;
+
+    async function fetchMovies(page, query = '') {
+      if (isLoading || !hasMore) return;
+      isLoading = true;
+      loading.style.display = 'block';
+      errorDiv.style.display = 'none';
+
+      try {
+        let url;
+        if (query) {
+          url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=${page}`;
+        } else if (!fallbackMode) {
+          url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=${page}`;
+        } else {
+          url = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=en-US&page=${page}`;
+        }
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (page === 1) moviesGrid.innerHTML = '';
+        displayMovies(data.results || []);
+
+        if (page >= MAX_PAGE || page >= data.total_pages) {
+          if (!fallbackMode && !query) {
+            fallbackMode = true;
+            currentPage = 1;
+            hasMore = true;
+            fetchMovies(1, query);
+            return;
+          }
+          hasMore = false;
+          endMessage.style.display = 'block';
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Error loading movies.';
+        errorDiv.style.display = 'block';
+      } finally {
+        loading.style.display = 'none';
+        isLoading = false;
+      }
+    }
+
+    function displayMovies(movies) {
+      if (!movies.length) return;
+      moviesGrid.innerHTML += movies.map(movie => `
+        <div class="movie-card" data-id="${movie.id}">
+          <img class="poster" src="${movie.poster_path ? IMG_URL + movie.poster_path : 'https://via.placeholder.com/500x750/111/ccc?text=No+Poster'}" alt="${movie.title}" loading="lazy">
+          <div class="info">
+            <div class="title">${movie.title || 'Unknown'}</div>
+            <div class="rating">★ ${movie.vote_average?.toFixed(1) || 'N/A'}</div>
+            <div class="overview">${movie.overview?.substring(0,160)+'...' || 'No description available.'}</div>
+          </div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.movie-card:not([data-listener])').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = card.dataset.id;
+          window.open(`https://www.themoviedb.org/movie/${id}/watch`, '_blank');
+        });
+        card.setAttribute('data-listener', 'true');
+      });
+    }
+
+    fetchMovies(1);
+
+    window.addEventListener('scroll', () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 800 && !isLoading && hasMore) {
+        currentPage++;
+        fetchMovies(currentPage, currentQuery);
+      }
+    });
+
+    let timeout;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        currentQuery = searchInput.value.trim();
+        currentPage = 1;
+        hasMore = true;
+        fallbackMode = false;
+        endMessage.style.display = 'none';
+        fetchMovies(1, currentQuery);
+      }, 500);
+    });
+  </script>
+</body>
+</html>
